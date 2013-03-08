@@ -319,7 +319,11 @@ class FlacInfo
     out_p.write(raw_data)
 
     in_p.close
-    out_p.close
+    if is_io?(args[:outfile])
+      out_p.rewind
+    else
+      out_p.close
+    end
 
     nil
   end
