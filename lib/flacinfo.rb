@@ -274,13 +274,16 @@ class FlacInfo
   # :call-seq:
   #   FlacInfo.write_picture()                           -> nil
   #   FlacInfo.write_picture(:outfile=>"str")            -> nil
+  #   FlacInfo.write_picture(:outfile=>"io_or_stringio") -> nil
   #   FlacInfo.write_picture(:n=>int)                    -> nil
   #   FlacInfo.write_picture(:outfile=>"str", :n=>int)   -> nil
   #
-  # If passed with ':outfile', the image will be written to a file with that name
-  # otherwise it is written to the value of the 'album' tag if it exists, otherwise it
-  # is written to 'flacimage'. All three of these will have a dot plus the relevant file
-  # extension appended. The argument to ':n' is which image to write in case of multiples.
+  # If passed with ':outfile', the image will be written to a file with that
+  # name otherwise it is written to the value of the 'album' tag if it exists,
+  # otherwise it is written to 'flacimage'. All three of these will have a dot
+  # plus the relevant file extension appended. If the ':outfile' argument is
+  # an IO or StringIO object, then the image is written to the object. The
+  # argument to ':n' is which image to write in case of multiples.
   #
   def write_picture(args = {})
     if @picture["n"] == 0
@@ -308,8 +311,7 @@ class FlacInfo
     end
 
     in_p  = File.new(@filename, "rb")
-    out_p = File.new(outfile, "wb")
-
+    out_p = is_io?(args[:outfile]) ? args[:outfile] : File.new(outfile, "wb")
     out_p.binmode #  For Windows folks...
 
     in_p.seek(@picture[n]['raw_data_offset'], IO::SEEK_CUR)
@@ -363,7 +365,7 @@ class FlacInfo
   # If 'str' is in the form 'name=value' only exact matches
   # will be deleted. If 'str' is in the form 'name' any and all
   # comments named 'name' will be deleted. Returns 'true' if a
-  # comment was deleted, false otherwise. Remember to call 
+  # comment was deleted, false otherwise. Remember to call
   # 'update!' to write changes to the file.
   #
   def comment_del(name)
@@ -613,7 +615,7 @@ class FlacInfo
     picture_type = ["Other", "32x32 pixels file icon", "Other file icon", "Cover (front)", "Cover (back)",
                     "Leaflet page", "Media", "Lead artist/lead performer/soloist", "Artist/performer",
                     "Conductor", "Band/Orchestra", "Composer", "Lyricist/text writer", "Recording Location",
-                    "During recording", "During performance", "Movie/video screen capture", "A bright 
+                    "During recording", "During performance", "Movie/video screen capture", "A bright
                      coloured fish", "Illustration", "Band/artist logotype", "Publisher/Studio logotype"]
 
     begin
@@ -668,7 +670,7 @@ class FlacInfo
         @application['raw_data'] = @fp.read(@application['block_size'] - 4)
       end
     rescue
-      raise FlacInfoReadError, "Could not parse METADATA_BLOCK_APPLICATION" 
+      raise FlacInfoReadError, "Could not parse METADATA_BLOCK_APPLICATION"
     end
   end
 
@@ -929,6 +931,10 @@ class FlacInfo
     rescue
       false
     end
+  end
+
+  def is_io?(arg)
+    [IO, StringIO].any? {|k| k === arg}
   end
 end
 

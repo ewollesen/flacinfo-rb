@@ -3,6 +3,7 @@
 $:.unshift File.join(File.dirname(__FILE__), "..", "lib")
 
 require 'test/unit'
+require 'stringio'
 require 'flacinfo'
 
 class TestFlacInfo < Test::Unit::TestCase
@@ -76,5 +77,12 @@ class TestFlacInfo < Test::Unit::TestCase
     assert_equal(38456, @flac.padding['offset'])
   end
 
-end
+  def test_write_picture_to_io
+    outfile = StringIO.new
+    @flac.write_picture(:outfile => outfile)
+    outfile.rewind
 
+    assert_equal(@flac.picture[1]['raw_data_length'], outfile.size)
+  end
+
+end
