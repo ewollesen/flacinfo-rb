@@ -804,7 +804,7 @@ class FlacInfo
       vorbis_comm_s += [@tags["vendor_tag"]].pack("A*")
       vorbis_comm_s += [@comment.length].pack("V")
       @comment.each do |c|
-        vorbis_comm_s += [c.length].pack("V")
+        vorbis_comm_s += [c.bytesize].pack("V")
         vorbis_comm_s += [c].pack("A*")
       end
       vorbis_comm_s
